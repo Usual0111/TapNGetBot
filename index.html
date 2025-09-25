@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TONTap</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00BFFF;
+            margin-bottom: 10px;
+        }
+        
+        .balance-section {
+            background: linear-gradient(135deg, #00BFFF, #1E90FF);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 191, 255, 0.2);
+        }
+        
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .balance-amount {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .balance-usd {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .action-card {
+            background: var(--tg-theme-button-color, #00BFFF);
+            color: var(--tg-theme-button-text-color, white);
+            border: none;
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100px;
+        }
+        
+        .action-card:hover, .action-card:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 191, 255, 0.3);
+        }
+        
+        .action-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .action-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .action-reward {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .daily-quest {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px dashed #00BFFF;
+        }
+        
+        .quest-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #00BFFF;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quest-description {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: var(--tg-theme-hint-color, #666);
+        }
+        
+        .quest-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 8px;
+            flex: 1;
+            margin-right: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: #00BFFF;
+            height: 100%;
+            width: 60%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666);
+        }
+        
+        .bottom-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: #00BFFF;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-secondary {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            color: var(--tg-theme-text-color, #000);
+            border: 2px solid #00BFFF;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-primary:hover, .btn-primary:active {
+            background: #1E90FF;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary:hover, .btn-secondary:active {
+            background: #00BFFF;
+            color: white;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00BFFF;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666);
+            margin-top: 5px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        .referral-section {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .referral-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #00BFFF;
+        }
+        
+        .referral-link {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            word-break: break-all;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+    
+    <div class="header">
+        <div class="logo">💎 TONTap</div>
+    </div>
+    
+    <div class="balance-section">
+        <div class="balance-label">Ваш баланс</div>
+        <div class="balance-amount" id="balance">0.000 TON</div>
+        <div class="balance-usd">≈ $0.00</div>
+    </div>
+    
+    <div class="stats-row">
+        <div class="stat-item">
+            <div class="stat-value" id="totalEarned">0.000</div>
+            <div class="stat-label">Заработано</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="adsWatched">0</div>
+            <div class="stat-label">Реклам</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="referrals">0</div>
+            <div class="stat-label">Рефералов</div>
+        </div>
+    </div>
+    
+    <div class="actions-grid">
+        <button class="action-card" onclick="watchAd()">
+            <div class="action-icon">📺</div>
+            <div class="action-title">Смотреть рекламу</div>
+            <div class="action-reward">+0.001 TON</div>
+        </button>
+        
+        <button class="action-card" onclick="tapAd()">
+            <div class="action-icon">👆</div>
+            <div class="action-title">Тап реклама</div>
+            <div class="action-reward">+0.0005 TON</div>
+        </button>
+        
+        <button class="action-card" onclick="visitSite()">
+            <div class="action-icon">🌐</div>
+            <div class="action-title">Посетить сайт</div>
+            <div class="action-reward">+0.002 TON</div>
+        </button>
+        
+        <button class="action-card" onclick="followChannel()">
+            <div class="action-icon">📢</div>
+            <div class="action-title">Подписка</div>
+            <div class="action-reward">+0.003 TON</div>
+        </button>
+    </div>
+    
+    <div class="daily-quest">
+        <div class="quest-title">
+            <span>🎯</span> Дневное задание
+        </div>
+        <div class="quest-description">
+            Пригласите 3 друзей и получите бонус!
+        </div>
+        <div class="quest-progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="questProgress"></div>
+            </div>
+            <div class="progress-text">
+                <span id="questCurrent">0</span>/3
+            </div>
+        </div>
+        <button class="btn-primary" onclick="shareReferral()" style="width: 100%;">
+            Пригласить друзей (+0.01 TON)
+        </button>
+    </div>
+    
+    <div class="referral-section">
+        <div class="referral-title">🔗 Ваша реферальная ссылка</div>
+        <div class="referral-link" id="referralLink" onclick="copyReferral()">
+            https://t.me/YourBot?start=ref_123456
+        </div>
+        <small style="color: #666;">Нажмите, чтобы скопировать</small>
+    </div>
+    
+    <div class="bottom-actions">
+        <button class="btn-secondary" onclick="connectWallet()">
+            💳 Подключить кошелек
+        </button>
+        <button class="btn-primary" onclick="withdraw()">
+            💰 Вывести
+        </button>
+    </div>
+
+    <script>
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // Данные пользователя (в реальном приложении это будет синхронизироваться с сервером)
+        let userData = {
+            balance: 0,
+            totalEarned: 0,
+            adsWatched: 0,
+            referrals: 0,
+            questProgress: 0,
+            walletConnected: false,
+            userId: tg.initDataUnsafe?.user?.id || 123456
+        };
+
+        // Загрузка данных из локального хранилища (имитация)
+        function loadUserData() {
+            const saved = localStorage.getItem('tontap_data');
+            if (saved) {
+                userData = { ...userData, ...JSON.parse(saved) };
+            }
+            updateUI();
+        }
+
+        // Сохранение данных
+        function saveUserData() {
+            // В реальном приложении здесь был бы API вызов к серверу
+            localStorage.setItem('tontap_data', JSON.stringify(userData));
+        }
+
+        // Обновление UI
+        function updateUI() {
+            document.getElementById('balance').textContent = userData.balance.toFixed(3) + ' TON';
+            document.getElementById('totalEarned').textContent = userData.totalEarned.toFixed(3);
+            document.getElementById('adsWatched').textContent = userData.adsWatched;
+            document.getElementById('referrals').textContent = userData.referrals;
+            document.getElementById('questCurrent').textContent = userData.questProgress;
+            
+            const progressPercent = Math.min((userData.questProgress / 3) * 100, 100);
+            document.getElementById('questProgress').style.width = progressPercent + '%';
+            
+            // Обновление реферальной ссылки
+            document.getElementById('referralLink').textContent = 
+                `https://t.me/YourBot?start=ref_${userData.userId}`;
+        }
+
+        // Показ уведомлений
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Добавление заработка
+        function addEarning(amount) {
+            userData.balance += amount;
+            userData.totalEarned += amount;
+            saveUserData();
+            updateUI();
+            showNotification(`+${amount.toFixed(3)} TON заработано!`);
+        }
+
+        // Просмотр рекламы
+        function watchAd() {
+            // Имитация просмотра рекламы
+            showNotification('Открывается реклама...');
+            
+            // Имитация задержки просмотра
+            setTimeout(() => {
+                userData.adsWatched++;
+                addEarning(0.001);
+            }, 2000);
+
+            // В реальном приложении здесь был бы переход на рекламную ссылку
+            // window.open('https://example.com/ad', '_blank');
+        }
+
+        // Тап реклама
+        function tapAd() {
+            addEarning(0.0005);
+            userData.adsWatched++;
+            saveUserData();
+        }
+
+        // Посещение сайта
+        function visitSite() {
+            showNotification('Переход на сайт...');
+            setTimeout(() => {
+                addEarning(0.002);
+                userData.adsWatched++;
+                saveUserData();
+            }, 1000);
+        }
+
+        // Подписка на канал
+        function followChannel() {
+            if (tg.initDataUnsafe?.user) {
+                // В реальном приложении здесь проверялась бы подписка
+                showNotification('Проверяем подписку...');
+                setTimeout(() => {
+                    addEarning(0.003);
+                    saveUserData();
+                }, 1500);
+            }
+        }
+
+        // Поделиться рефералкой
+        function shareReferral() {
+            const referralLink = `https://t.me/YourBot?start=ref_${userData.userId}`;
+            const message = `🚀 Присоединяйся к TONTap и зарабатывай TON криптовалюту!\n\n💰 Смотри рекламу, выполняй задания, получай награды!\n🎯 Ежедневные бонусы и быстрые выплаты\n\n👉 ${referralLink}`;
+            
+            if (tg.initDataUnsafe?.user) {
+                tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(message)}`);
+            } else {
+                copyReferral();
+                showNotification('Ссылка скопирована! Поделитесь с друзьями');
+            }
+        }
+
+        // Копирование реферальной ссылки
+        function copyReferral() {
+            const referralLink = document.getElementById('referralLink').textContent;
+            navigator.clipboard.writeText(referralLink).then(() => {
+                showNotification('Ссылка скопирована!');
+            });
+        }
+
+        // Подключение кошелька
+        function connectWallet() {
+            if (!userData.walletConnected) {
+                showNotification('Подключение кошелька...');
+                // В реальном приложении здесь была бы интеграция с TON Connect
+                setTimeout(() => {
+                    userData.walletConnected = true;
+                    saveUserData();
+                    showNotification('Кошелек подключен!');
+                }, 2000);
+            } else {
+                showNotification('Кошелек уже подключен!');
+            }
+        }
+
+        // Вывод средств
+        function withdraw() {
+            if (!userData.walletConnected) {
+                showNotification('Сначала подключите кошелек!');
+                return;
+            }
+
+            if (userData.balance < 0.01) {
+                showNotification('Минимальная сумма для вывода: 0.01 TON');
+                return;
+            }
+
+            // Имитация вывода средств
+            showNotification('Обрабатываем вывод...');
+            setTimeout(() => {
+                const withdrawAmount = userData.balance;
+                userData.balance = 0;
+                saveUserData();
+                updateUI();
+                showNotification(`${withdrawAmount.toFixed(3)} TON отправлено на ваш кошелек!`);
+            }, 3000);
+        }
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            
+            // Настройка Telegram WebApp
+            tg.MainButton.setText('Закрыть');
+            tg.MainButton.onClick(() => tg.close());
+            
+            // Показываем приветствие для новых пользователей
+            if (userData.totalEarned === 0) {
+                setTimeout(() => {
+                    showNotification('Добро пожаловать в TONTap! Начните зарабатывать прямо сейчас! 🚀');
+                }, 1000);
+            }
+        });
+
+        // Обработка back button
+        tg.BackButton.onClick(() => tg.close());
+
+        // Имитация получения реферальных наград
+        setInterval(() => {
+            if (Math.random() < 0.1) { // 10% шанс каждые 10 секунд
+                userData.referrals++;
+                userData.questProgress = Math.min(userData.questProgress + 1, 3);
+                if (userData.questProgress === 3) {
+                    addEarning(0.01);
+                    userData.questProgress = 0;
+                    showNotification('🎯 Дневное задание выполнено! +0.01 TON');
+                } else {
+                    addEarning(0.005);
+                    showNotification('👥 Новый реферал! +0.005 TON');
+                }
+                saveUserData();
+                updateUI();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
